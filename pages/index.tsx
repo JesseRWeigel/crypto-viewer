@@ -1,4 +1,4 @@
-import { Typography } from '@material-ui/core'
+import { CircularProgress, Typography } from '@material-ui/core'
 import Head from 'next/head'
 import Image from 'next/image'
 import { useEffect, useState } from 'react'
@@ -15,11 +15,12 @@ type ChartDataType = {
   price: number
 }
 export default function Home() {
+  const [selectedAsset, setSelectedAsset] = useState('eth')
   const [chartData, setChartData] = useState<ChartDataType[]>([])
   const [timeSeriesData, setTimeSeriesData] = useState()
   const getData = async () => {
     fetch(
-      'https://data.messari.io/api/v1/assets/eth/metrics/price/time-series?start=2021-01-01&end=2021-02-01&interval=1d'
+      `https://data.messari.io/api/v1/assets/${selectedAsset}/metrics/price/time-series?start=2021-01-01&end=2021-02-01&interval=1d`
     )
       .then((res) => res.json())
       .then((data) => {
@@ -33,18 +34,35 @@ export default function Home() {
         })
         setChartData(chartDataArray)
       })
+      .catch((err) => {
+        console.log(err)
+      })
   }
 
   const [metrics, setMetrics] = useState()
   const getMetrics = async () => {
-    fetch('https://data.messari.io/api/v1/assets/eth/metrics')
+    fetch(`https://data.messari.io/api/v1/assets/${selectedAsset}/metrics`)
       .then((res) => res.json())
       .then((data) => setMetrics(data))
+      .catch((err) => {
+        console.log(err)
+      })
+  }
+
+  const [assets, setAssets] = useState()
+  const getAssets = async () => {
+    fetch('https://data.messari.io/api/v1/assets')
+      .then((res) => res.json())
+      .then((data) => setAssets(data))
+      .catch((err) => {
+        console.log(err)
+      })
   }
 
   useEffect(() => {
     getData()
     getMetrics()
+    getAssets()
   }, [])
 
   return (
@@ -56,24 +74,36 @@ export default function Home() {
       </Head>
 
       <main className={styles.main}>
-        <Typography>Crypto Viewer</Typography>
-        {metrics && (
-          <>
+        <Typography style={{ marginTop: '50px' }} variant="h2">
+          Crypto Viewer
+        </Typography>
+        {metrics ? (
+          <div
+            style={{
+              marginTop: '20px',
+              marginBottom: '20px',
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+            }}
+          >
             <Typography>{metrics?.data?.name}</Typography>
             <Typography>{`Symbol: ${metrics?.data?.symbol}`}</Typography>
-            <Typography>{`Market Cap Rank: ${metrics?.data.marketcap.rank}`}</Typography>
-            <Typography>{`Current Price: $${metrics?.data.market_data.price_usd.toFixed(
+            <Typography>{`Market Cap Rank: ${metrics?.data?.marketcap.rank}`}</Typography>
+            <Typography>{`Current Price: $${metrics?.data.market_data.price_usd?.toFixed(
               2
             )}`}</Typography>
-            <Typography>{`All time high: $${metrics?.data.all_time_high.price.toFixed(
+            <Typography>{`All time high: $${metrics?.data.all_time_high.price?.toFixed(
               2
             )}`}</Typography>
-            <Typography>{`24h Change: ${metrics?.data.market_data.percent_change_usd_last_24_hours.toFixed(
+            <Typography>{`24h Change: ${metrics?.data.market_data.percent_change_usd_last_24_hours?.toFixed(
               2
             )}%`}</Typography>
-          </>
+          </div>
+        ) : (
+          <CircularProgress />
         )}
-        {timeSeriesData && (
+        {timeSeriesData ? (
           <LineChart
             width={600}
             height={300}
@@ -86,6 +116,29 @@ export default function Home() {
             <YAxis />
             <Tooltip />
           </LineChart>
+        ) : (
+          <CircularProgress />
+        )}
+        {assets ? (
+          assets.data.map((asset, i) => (
+            <div
+              key={i}
+              style={{ marginTop: '10px' }}
+              onClick={() => {
+                setSelectedAsset(asset.slug)
+                getData()
+                getMetrics()
+              }}
+            >
+              <Typography>{`${
+                asset.symbol
+              }: $${asset.metrics.market_data.price_usd?.toFixed(
+                2
+              )}`}</Typography>
+            </div>
+          ))
+        ) : (
+          <CircularProgress />
         )}
       </main>
     </div>
