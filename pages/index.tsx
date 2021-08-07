@@ -97,6 +97,12 @@ export default function Home() {
     getAssets()
   }, [])
 
+  //https://stackoverflow.com/a/16233919/4718107
+  const formatCurrency = new Intl.NumberFormat(undefined, {
+    style: 'currency',
+    currency: 'USD',
+  })
+
   return (
     <div className={styles.container}>
       <Head>
@@ -122,11 +128,11 @@ export default function Home() {
             <Typography variant="h4">{metrics?.data?.name}</Typography>
             <Typography>{`Symbol: ${metrics?.data?.symbol}`}</Typography>
             <Typography>{`Market Cap Rank: ${metrics?.data?.marketcap.rank}`}</Typography>
-            <Typography>{`Current Price: $${metrics?.data.market_data.price_usd?.toFixed(
-              2
+            <Typography>{`Current Price: ${formatCurrency.format(
+              metrics?.data.market_data.price_usd
             )}`}</Typography>
-            <Typography>{`All time high: $${metrics?.data.all_time_high.price?.toFixed(
-              2
+            <Typography>{`All time high: ${formatCurrency.format(
+              metrics?.data.all_time_high.price
             )}`}</Typography>
             <Typography>{`24h Change: ${metrics?.data.market_data.percent_change_usd_last_24_hours?.toFixed(
               2
@@ -195,8 +201,8 @@ export default function Home() {
                       align="right"
                       component="th"
                       scope="row"
-                    >{`$${asset.metrics.market_data.price_usd?.toFixed(
-                      2
+                    >{`${formatCurrency.format(
+                      asset.metrics.market_data.price_usd
                     )}`}</StyledTableCell>
                   </StyledTableRow>
                 ))}
