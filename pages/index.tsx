@@ -81,7 +81,7 @@ export default function Home() {
     getData()
     getMetrics()
   }
-  const [assets, setAssets] = useState<any>([])
+  const [assets, setAssets] = useState<any>()
   const getAssets = async () => {
     fetch('https://data.messari.io/api/v1/assets')
       .then((res) => res.json())
