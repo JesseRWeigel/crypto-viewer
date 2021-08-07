@@ -17,13 +17,7 @@ import TableHead from '@material-ui/core/TableHead'
 import TableRow from '@material-ui/core/TableRow'
 import Paper from '@material-ui/core/Paper'
 import TableCell, { tableCellClasses } from '@material-ui/core/TableCell'
-
 import { styled } from '@material-ui/core/styles'
-
-const data = [
-  { name: 'Page A', price: 400 },
-  { name: 'Page B', price: 200 },
-]
 
 type ChartDataType = {
   name: string
@@ -53,7 +47,7 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
 export default function Home() {
   const [selectedAsset, setSelectedAsset] = useState('ethereum')
   const [chartData, setChartData] = useState<ChartDataType[]>([])
-  const [timeSeriesData, setTimeSeriesData] = useState()
+  const [timeSeriesData, setTimeSeriesData] = useState<any>()
   const getData = async () => {
     fetch(
       `https://data.messari.io/api/v1/assets/${selectedAsset}/metrics/price/time-series?start=2021-01-01&end=2021-02-01&interval=1d`
@@ -75,7 +69,7 @@ export default function Home() {
       })
   }
 
-  const [metrics, setMetrics] = useState()
+  const [metrics, setMetrics] = useState<any>()
   const getMetrics = async () => {
     fetch(`https://data.messari.io/api/v1/assets/${selectedAsset}/metrics`)
       .then((res) => res.json())
@@ -89,7 +83,7 @@ export default function Home() {
     getData()
     getMetrics()
   }
-  const [assets, setAssets] = useState()
+  const [assets, setAssets] = useState<any>([])
   const getAssets = async () => {
     fetch('https://data.messari.io/api/v1/assets')
       .then((res) => res.json())
