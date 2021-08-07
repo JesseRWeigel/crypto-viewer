@@ -147,7 +147,7 @@ export default function Home() {
               label="Asset"
               onChange={handleChange}
             >
-              {assets?.data?.map((asset) => (
+              {assets?.data?.map((asset: any) => (
                 <MenuItem key={asset.slug} value={asset.slug}>
                   {asset.name}
                 </MenuItem>
@@ -183,7 +183,7 @@ export default function Home() {
                 </TableRow>
               </TableHead>
               <TableBody>
-                {assets.data.map((asset) => (
+                {assets.data.map((asset: any) => (
                   <StyledTableRow
                     key={asset.slug}
                     sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
