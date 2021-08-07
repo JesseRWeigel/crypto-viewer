@@ -5,6 +5,21 @@ import { useEffect, useState } from 'react'
 import styles from '../styles/Home.module.css'
 import { LineChart, Line, CartesianGrid, XAxis, YAxis, Tooltip } from 'recharts'
 import { format } from 'date-fns'
+import Box from '@material-ui/core/Box'
+import InputLabel from '@material-ui/core/InputLabel'
+import MenuItem from '@material-ui/core/MenuItem'
+import FormControl from '@material-ui/core/FormControl'
+import Select, { SelectChangeEvent } from '@material-ui/core/Select'
+import Table from '@material-ui/core/Table'
+import TableBody from '@material-ui/core/TableBody'
+import TableContainer from '@material-ui/core/TableContainer'
+import TableHead from '@material-ui/core/TableHead'
+import TableRow from '@material-ui/core/TableRow'
+import Paper from '@material-ui/core/Paper'
+import TableCell, { tableCellClasses } from '@material-ui/core/TableCell'
+
+import { styled } from '@material-ui/core/styles'
+
 const data = [
   { name: 'Page A', price: 400 },
   { name: 'Page B', price: 200 },
@@ -14,8 +29,29 @@ type ChartDataType = {
   name: string
   price: number
 }
+
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.common.black,
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}))
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  '&:nth-of-type(odd)': {
+    backgroundColor: theme.palette.action.hover,
+  },
+  // hide last border
+  '&:last-child td, &:last-child th': {
+    border: 0,
+  },
+}))
+
 export default function Home() {
-  const [selectedAsset, setSelectedAsset] = useState('eth')
+  const [selectedAsset, setSelectedAsset] = useState('ethereum')
   const [chartData, setChartData] = useState<ChartDataType[]>([])
   const [timeSeriesData, setTimeSeriesData] = useState()
   const getData = async () => {
@@ -48,7 +84,11 @@ export default function Home() {
         console.log(err)
       })
   }
-
+  const handleChange = (event: SelectChangeEvent) => {
+    setSelectedAsset(event.target.value as string)
+    getData()
+    getMetrics()
+  }
   const [assets, setAssets] = useState()
   const getAssets = async () => {
     fetch('https://data.messari.io/api/v1/assets')
@@ -87,7 +127,7 @@ export default function Home() {
               alignItems: 'center',
             }}
           >
-            <Typography>{metrics?.data?.name}</Typography>
+            <Typography variant="h4">{metrics?.data?.name}</Typography>
             <Typography>{`Symbol: ${metrics?.data?.symbol}`}</Typography>
             <Typography>{`Market Cap Rank: ${metrics?.data?.marketcap.rank}`}</Typography>
             <Typography>{`Current Price: $${metrics?.data.market_data.price_usd?.toFixed(
@@ -100,6 +140,26 @@ export default function Home() {
               2
             )}%`}</Typography>
           </div>
+        ) : (
+          <CircularProgress />
+        )}
+        {assets ? (
+          <FormControl style={{ marginBottom: '20px' }}>
+            <InputLabel id="asset-select-label">Asset</InputLabel>
+            <Select
+              labelId="asset-select-label"
+              id="asset-select"
+              value={selectedAsset}
+              label="Asset"
+              onChange={handleChange}
+            >
+              {assets?.data?.map((asset) => (
+                <MenuItem key={asset.slug} value={asset.slug}>
+                  {asset.name}
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         ) : (
           <CircularProgress />
         )}
@@ -120,23 +180,37 @@ export default function Home() {
           <CircularProgress />
         )}
         {assets ? (
-          assets.data.map((asset, i) => (
-            <div
-              key={i}
-              style={{ marginTop: '10px' }}
-              onClick={() => {
-                setSelectedAsset(asset.slug)
-                getData()
-                getMetrics()
-              }}
-            >
-              <Typography>{`${
-                asset.symbol
-              }: $${asset.metrics.market_data.price_usd?.toFixed(
-                2
-              )}`}</Typography>
-            </div>
-          ))
+          <TableContainer style={{ marginTop: '20px' }} component={Paper}>
+            <Table sx={{ minWidth: 650 }} aria-label="simple table">
+              <TableHead>
+                <TableRow>
+                  <StyledTableCell>Asset</StyledTableCell>
+                  <StyledTableCell align="right">Price(USD)</StyledTableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {assets.data.map((asset) => (
+                  <StyledTableRow
+                    key={asset.slug}
+                    sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
+                  >
+                    <StyledTableCell component="th" scope="row">
+                      {asset.name}
+                    </StyledTableCell>
+
+                    <StyledTableCell
+                      key={asset.id}
+                      align="right"
+                      component="th"
+                      scope="row"
+                    >{`$${asset.metrics.market_data.price_usd?.toFixed(
+                      2
+                    )}`}</StyledTableCell>
+                  </StyledTableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </TableContainer>
         ) : (
           <CircularProgress />
         )}
