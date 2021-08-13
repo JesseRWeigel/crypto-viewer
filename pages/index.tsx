@@ -47,6 +47,7 @@ export default function Home() {
   const [chartData, setChartData] = useState<ChartDataType[]>([])
   const [timeSeriesData, setTimeSeriesData] = useState<any>()
   const getData = async () => {
+    setChartData([])
     fetch(
       `https://data.messari.io/api/v1/assets/${selectedAsset}/metrics/price/time-series?start=2021-01-01&end=2021-02-01&interval=1d`
     )
@@ -60,6 +61,7 @@ export default function Home() {
             price: Math.round(item[4] * 1e2) / 1e2,
           })
         })
+        console.log(chartDataArray)
         setChartData(chartDataArray)
       })
       .catch((err) => {
@@ -78,9 +80,12 @@ export default function Home() {
   }
   const handleChange = (event: SelectChangeEvent) => {
     setSelectedAsset(event.target.value as string)
+  }
+
+  useEffect(() => {
     getData()
     getMetrics()
-  }
+  }, [selectedAsset])
   const [assets, setAssets] = useState<any>()
   const getAssets = async () => {
     fetch('https://data.messari.io/api/v1/assets')
@@ -161,7 +166,7 @@ export default function Home() {
         ) : (
           <CircularProgress />
         )}
-        {timeSeriesData ? (
+        {chartData.length > 0 ? (
           <LineChart
             width={600}
             height={300}
